@@ -117,10 +117,10 @@ def gta(experiment_name, args, log_file=sys.stdout):
             
             # compute discriminator losses on fake target images
             target_fake_dis, target_fake_clf = D(target_generated_samples)
-            target_D_d_loss_fake = criterion_dis(target_fake_dis, fake_labels)
+            target_D_dis_loss_fake = criterion_dis(target_fake_dis, fake_labels)
             
             # perform D optimization step
-            D_loss = source_D_dis_loss_real + source_D_clf_loss_real + source_D_dis_loss_fake + target_D_d_loss_fake
+            D_loss = source_D_dis_loss_real + source_D_clf_loss_real + source_D_dis_loss_fake + target_D_dis_loss_fake
             D_loss.backward(retain_graph=True)
             D_optim.step()
         
