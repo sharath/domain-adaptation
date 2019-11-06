@@ -16,6 +16,7 @@ def gta(experiment_name, args, log_file=sys.stdout):
     source_train = SVHN(root='datasets/', transform=transform, split='train')
     source_validation = SVHN(root='datasets/', transform=transform, split='test')
     target_train = MNIST(root='datasets/', train=True, transform=transform)
+    target_test = MNIST(root='datasets/', train=False, transform=transform)
     
     nclasses = len(set(source_train.labels))
     
@@ -60,12 +61,13 @@ def gta(experiment_name, args, log_file=sys.stdout):
     fake_labels = torch.FloatTensor(args.batch_size).fill_(fake_label_val).to(args.device)
     
     losses = {'D': [], 'G': [], 'F': [], 'C': []}
-    accuracy = []
+    accuracy = {'train': [], 'test': []}
 
     # prepare dataloaders
     source_train_loader = DataLoader(source_train, batch_size=args.batch_size, shuffle=True, drop_last=True)
     source_validation_loader = DataLoader(source_validation, batch_size=args.batch_size, shuffle=True, drop_last=False)
     target_train_loader = DataLoader(target_train, batch_size=args.batch_size, shuffle=True, drop_last=True)
+    target_test_loader = DataLoader(target_test, batch_size=args.batch_size, shuffle=True, drop_last=False)
     
     for epoch in range(args.epochs):
         F.train()
@@ -201,8 +203,18 @@ def gta(experiment_name, args, log_file=sys.stdout):
             predictions = C(embeddings)
             correct.append(torch.sum(torch.argmax(predictions, 1) == labels).item())
             total.append(len(images))
-        accuracy.append(sum(correct)/sum(total))
-        print(f'Epoch: {epoch+1:3d} \t Accuracy: {accuracy[-1]:2.3f}', flush=True, file=log_file)
+        accuracy['train'].append(sum(correct)/sum(total))
+        
+        correct, total = [], []
+        for it, (images, labels) in enumerate(target_test_loader):
+            images, labels = images.to(args.device), labels.to(args.device)
+            embeddings = F(images).squeeze()
+            predictions = C(embeddings)
+            correct.append(torch.sum(torch.argmax(predictions, 1) == labels).item())
+            total.append(len(images))
+        accuracy['test'].append(sum(correct)/sum(total))
+        
+        print(f'Epoch: {epoch+1:3d} \t Train: {accuracy["train"][-1]:2.3f} \t Test: {accuracy["test"][-1]:2.3f}', flush=True, file=log_file)
         print(flush=True, file=log_file)
         
     save_model(F, 'F', experiment_name)

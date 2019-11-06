@@ -4,16 +4,18 @@ import torch.nn as nn
 import numpy as np
 from torch.utils.data import DataLoader
 from common import save_model, save_data
-from torchvision.datasets import SVHN
+from torchvision.datasets import SVHN, MNIST
 from .utils import get_transform
 from .models import (
     get_encoder, get_classifier
 )
 
+
 def baseline(experiment_name, args, log_file=sys.stdout):
     transform = get_transform(args.width, args.channels)
     source_train = SVHN(root='datasets/', transform=transform, split='train')
     source_validation = SVHN(root='datasets/', transform=transform, split='test')
+    target_test = MNIST(root='datasets/', train=False, transform=transform)
     
     nclasses = len(set(source_train.labels))
     
@@ -35,11 +37,12 @@ def baseline(experiment_name, args, log_file=sys.stdout):
     # loss function
     criterion_clf = nn.CrossEntropyLoss().to(args.device)
     losses = {'F': [], 'C': []}
-    accuracy = []
+    accuracy = {'train': [], 'test': []}
 
     # prepare dataloaders
     source_train_loader = DataLoader(source_train, batch_size=args.batch_size, shuffle=True, drop_last=True)
     source_validation_loader = DataLoader(source_validation, batch_size=args.batch_size, shuffle=True, drop_last=False)
+    target_test_loader = DataLoader(target_test, batch_size=args.batch_size, shuffle=True, drop_last=False)
     
     for epoch in range(args.epochs):
         F.train()
@@ -104,8 +107,18 @@ def baseline(experiment_name, args, log_file=sys.stdout):
             predictions = C(embeddings)
             correct.append(torch.sum(torch.argmax(predictions, 1) == labels).item())
             total.append(len(images))
-        accuracy.append(sum(correct)/sum(total))
-        print(f'Epoch: {epoch+1:3d} \t Accuracy: {accuracy[-1]:2.3f}', flush=True, file=log_file)
+        accuracy['train'].append(sum(correct)/sum(total))
+        
+        correct, total = [], []
+        for it, (images, labels) in enumerate(target_test_loader):
+            images, labels = images.to(args.device), labels.to(args.device)
+            embeddings = F(images).squeeze()
+            predictions = C(embeddings)
+            correct.append(torch.sum(torch.argmax(predictions, 1) == labels).item())
+            total.append(len(images))
+        accuracy['test'].append(sum(correct)/sum(total))
+        
+        print(f'Epoch: {epoch+1:3d} \t Train: {accuracy["train"][-1]:2.3f} \t Test: {accuracy["test"][-1]:2.3f}', flush=True, file=log_file)
         print(flush=True, file=log_file)
         
     save_model(F, 'F', experiment_name)
