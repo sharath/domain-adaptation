@@ -3,7 +3,7 @@ import pickle
 import torch
 from time import time
 
-def init_experiment(name, args, base_path='experiments', params_file='parameters.opt'):
+def init_experiment(name, args, base_path='experiments', params_file='parameters.opt', log_file='output.log'):
     start = int(time()*100)
     experiment_name = f'{name}_{start}'
     experiment_dir = os.path.join(base_path, experiment_name)
@@ -11,8 +11,8 @@ def init_experiment(name, args, base_path='experiments', params_file='parameters
     params_full_path = os.path.join(experiment_dir, params_file)
     with open(params_full_path, 'w') as fp:
         fp.write(str(args))
-    return experiment_name
-
+    log_path = os.path.join(experiment_dir, log_file)
+    return experiment_name, log_path
 
 
 def save_model(model, model_name, experiment_name, base_path='experiments'):

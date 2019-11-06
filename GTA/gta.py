@@ -1,3 +1,4 @@
+import sys
 import torch
 import torch.nn as nn
 import numpy as np
@@ -10,7 +11,7 @@ from .models import (
     get_encoder, get_classifier
 )
 
-def gta(experiment_name, args):
+def gta(experiment_name, args, log_file=sys.stdout):
     transform = get_transform(args.width, args.channels)
     source_train = SVHN(root='datasets/', transform=transform, split='train')
     source_validation = SVHN(root='datasets/', transform=transform, split='test')
@@ -69,7 +70,7 @@ def gta(experiment_name, args):
     for epoch in range(args.epochs):
         F.train()
         C.train()
-        print('Iter \t F_loss \t C_loss \t G_loss \t D_loss')
+        print('Iter \t F_loss \t C_loss \t G_loss \t D_loss', flush=True, file=log_file)
         for it, (source_batch, target_batch) in enumerate(zip(source_train_loader, target_train_loader)):
             '''
             Pre-processing
@@ -189,7 +190,7 @@ def gta(experiment_name, args):
                 G_avg = np.mean(losses['G'][-10:])
                 F_avg = np.mean(losses['F'][-10:])
                 C_avg = np.mean(losses['C'][-10:])
-                print(f'{it:3d}\t{F_avg:3f}\t{C_avg:3f}\t{D_avg:3f}\t{G_avg:3f}')
+                print(f'{it:3d}\t{F_avg:3f}\t{C_avg:3f}\t{D_avg:3f}\t{G_avg:3f}', flush=True, file=log_file)
         
         F.eval()
         C.eval()
@@ -201,8 +202,8 @@ def gta(experiment_name, args):
             correct.append(torch.sum(torch.argmax(predictions, 1) == labels).item())
             total.append(len(images))
         accuracy.append(sum(correct)/sum(total))
-        print(f'Epoch: {epoch+1:3d} \t Accuracy: {accuracy[-1]:2.3f}')
-        print()
+        print(f'Epoch: {epoch+1:3d} \t Accuracy: {accuracy[-1]:2.3f}', flush=True, file=log_file)
+        print(flush=True, file=log_file)
         
     save_model(F, 'F', experiment_name)
     save_model(C, 'C', experiment_name)

@@ -6,8 +6,10 @@ from .gta import gta
 
 args = parse_args()
 if not args.baseline:
-    experiment_name = init_experiment('GTA_adapt', args)
-    gta(experiment_name, args)
+    experiment_name, log_file = init_experiment('GTA_adapt', args)
+    with open(log_file, 'w') as fp:
+        gta(experiment_name, args, fp)
 else:
-    experiment_name = init_experiment('GTA_baseline', args)
-    baseline(experiment_name, args)
+    experiment_name, log_file = init_experiment('GTA_baseline', args)
+    with open(log_file, 'w') as fp:
+        baseline(experiment_name, args, fp)
