@@ -7,7 +7,7 @@ Some experiments with domain adaptation using GANs.
 
 Self-contained prototyping code. Everything else is designed to run on [Gypsum](https://gypsum-docs.cs.umass.edu/).
 
-## Generate to adapt
+## Generate to Adapt
 
 Implementation based on [1].
 
@@ -22,8 +22,7 @@ Usage:
 python3 -m GTA <args>
 
 ```
-
-
+![Generate to Adapt](experiments/GTA_results.png)
 
 
 
