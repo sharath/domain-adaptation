@@ -11,7 +11,7 @@ def parse_args():
     parser.add_argument('--filters', type=int, default=64, help='number of filters in encoder network')
     
     parser.add_argument('--embedding_dim', type=int, default=128, help='size of encoder network output vector')
-    parser.add_argument('--latent_dim', type=int, default=512, help='size of generator network input vector')
+    parser.add_argument('--latent_dim', type=int, default=256, help='size of generator network input vector')
 
     parser.add_argument('--lr', type=float, default=0.0005, help='adam optimizer learning rate')
     parser.add_argument('--beta1', type=float, default=0.8, help='adam optimizer beta1 value')
