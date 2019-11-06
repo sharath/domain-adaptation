@@ -11,11 +11,20 @@ Self-contained prototyping code. Everything else is designed to run on [Gypsum](
 
 Implementation based on [1].
 
-Usage:
+Get the datasets:
+```bash
+python3 scripts/download_GTA_datasets.py
 ```
+
+
+Usage:
+```bash
 python3 -m GTA <args>
 
 ```
+
+
+
 
 
 # References
