@@ -82,8 +82,8 @@ def gta(experiment_name, args, log_file=sys.stdout):
             
             # compute one-hot vectors
             source_labels_oh = nn.functional.one_hot(source_labels, nclasses+1).float().to(args.device)
-            target_labels_oh = source_labels_oh.scatter(1, torch.LongTensor(args.batch_size, 1).fill_(nclasses).to(args.device), 1)
-            
+            target_labels_oh = nn.functional.one_hot(nclasses*torch.ones_like(source_labels), nclasses+1).float().to(args.device)
+
             # sample latent noise batch
             latent_batch = torch.FloatTensor(args.batch_size, args.latent_dim, 1, 1).normal_(0, 1).to(args.device)
             
