@@ -8,7 +8,7 @@ for a in ${alphas[@]}
 do
   for b in ${betas[@]}
   do
-    sbatch --output=/dev/null --error=/dev/null -p 2080ti-short --gres=gpu:1 --mem=6144 scripts/launch_GTA_single.sh $seed $a $b
+    sbatch --output=/dev/null --error=/dev/null -p 1080ti-short --gres=gpu:1 --mem=6144 scripts/launch_GTA_single.sh $seed $a $b
     sleep 2
   done
 done
