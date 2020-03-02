@@ -13,6 +13,7 @@ def parse_args():
     parser.add_argument('--embedding_dim', type=int, default=128, help='size of encoder network output vector')
     parser.add_argument('--latent_dim', type=int, default=256, help='size of generator network input vector')
 
+    parser.add_argument('--seed', type=int, default=1, help='random seeding')
     parser.add_argument('--lr', type=float, default=0.0005, help='adam optimizer learning rate')
     parser.add_argument('--beta1', type=float, default=0.8, help='adam optimizer beta1 value')
     parser.add_argument('--beta2', type=float, default=0.999, help='adam optimizer beta2 value')
