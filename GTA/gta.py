@@ -175,7 +175,7 @@ def gta(experiment_name, args, log_file=sys.stdout):
             target_D_dis_loss_fake = criterion_dis(target_fake_dis, real_labels)
             
             # perform F optimization step
-            F_loss = C_loss + args.adv_weight * (source_D_clf_loss_fake + args.alpha * target_D_dis_loss_fake)
+            F_loss = C_loss + args.alpha * source_D_clf_loss_fake + args.beta * target_D_dis_loss_fake
             F_loss.backward(retain_graph=True)
             F_optim.step()
             
