@@ -18,10 +18,10 @@ def parse_args():
     parser.add_argument('--beta1', type=float, default=0.8, help='adam optimizer beta1 value')
     parser.add_argument('--beta2', type=float, default=0.999, help='adam optimizer beta2 value')
     parser.add_argument('--batch_size', type=int, default=100, help='training batch size')
-    parser.add_argument('--epochs', type=int, default=100, help='number of epochs to train for')
+    parser.add_argument('--epochs', type=int, default=50, help='number of epochs to train for')
     
-    parser.add_argument('--adv_weight', type=float, default=0.1, help='weight of source adversarial loss')
-    parser.add_argument('--alpha', type=float, default=0.3, help='multiplicative weight of target adversarial loss')
+    parser.add_argument('--alpha', type=float, default=0.1, help='weight of source classification loss')
+    parser.add_argument('--beta', type=float, default=0.03, help='weight of adversarial loss')
     
     parser.add_argument('--device', type=str, default='cuda', help='specify the device for pytorch tensors')
     return parser.parse_args()

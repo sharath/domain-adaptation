@@ -1,17 +1,13 @@
 #!/bin/sh
 
-alpha=(0.05 0.1 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50)
-adv_weight=(0.05 0.1 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50)
+vals=(0.05 0.15 0.25 0.35 0.45)
 seed=1
 
-for i in {1..20}
+for a in ${vals[@]}
 do
-  for a in ${alpha[@]}
+  for b in ${vals[@]}
   do
-    for b in ${adv_weight[@]}
-    do
-      sbatch --output=/dev/null --error=/dev/null -p 2080ti-long --gres=gpu:1 scripts/launch_GTA.sh $seed $a $b
-      sleep 1
-    done
+    sbatch --output=/dev/null --error=/dev/null -p 2080ti-long --gres=gpu:1 --mem=6144 scripts/launch_GTA.sh $seed $a $b
+    sleep 2
   done
 done
