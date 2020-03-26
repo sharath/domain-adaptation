@@ -12,6 +12,10 @@ from .models import (
 
 
 def baseline(experiment_name, args, log_file=sys.stdout):
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed_all(args.seed)
+
     transform = get_transform(args.width, args.channels)
     source_train = SVHN(root='datasets/', transform=transform, split='train')
     source_validation = SVHN(root='datasets/', transform=transform, split='test')
