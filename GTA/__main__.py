@@ -4,12 +4,10 @@ from .baseline import baseline
 from .gta import gta
 
 args = parse_args()
+experiment_name, log_file = init_experiment(args)
 
-if not args.baseline:
-    experiment_name, log_file = init_experiment('GTA_adapt', args)
-    with open(log_file, 'w') as fp:
+with open(log_file, 'w') as fp:
+    if not args.baseline:
         gta(experiment_name, args, fp)
-else:
-    experiment_name, log_file = init_experiment('GTA_baseline', args)
-    with open(log_file, 'w') as fp:
+    else:
         baseline(experiment_name, args, fp)
