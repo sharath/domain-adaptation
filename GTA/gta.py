@@ -114,20 +114,31 @@ def gta(experiment_name, args, log_file=sys.stdout):
     
             # compute discriminator losses on real source images
             source_real_dis, source_real_clf = D(source_images)
-            source_D_dis_loss_real = criterion_dis(source_real_dis, real_labels)
+            #source_D_dis_loss_real = criterion_dis(source_real_dis, real_labels)
+            source_D_dis_loss_real = source_real_dis.mean()
             source_D_clf_loss_real = criterion_clf(source_real_clf, source_labels)
             
             # compute discriminator losses on fake source images
             source_fake_dis, source_fake_clf = D(source_generated_samples)
-            source_D_dis_loss_fake = criterion_dis(source_fake_dis, fake_labels)
-            
+            #source_D_dis_loss_fake = criterion_dis(source_fake_dis, fake_labels)
+            source_D_dis_loss_fake = source_fake_dis.mean()
             # compute discriminator losses on fake target images
             target_fake_dis, target_fake_clf = D(target_generated_samples)
-            target_D_dis_loss_fake = criterion_dis(target_fake_dis, fake_labels)
+            #target_D_dis_loss_fake = criterion_dis(target_fake_dis, fake_labels)
+            target_D_dis_loss_fake = target_fake_dis.mean()
             
+            # compute gradient penalty
+            alpha = torch.rand(args.batch_size, 1).expand(source_images.size()).to(args.device)
+            interpolate = (alpha * source_images + (1 - alpha) * source_generated_samples).requires_grad_(True)
+            gradients = torch.autograd.grad(outputs=D(interpolate),
+                                    inputs=interpolate,
+                                    grad_outputs=real_labels,
+                                    create_graph=True, retain_graph=True, only_inputs=True)[0]
+            gradient_penalty = (gradients.norm(2, dim=1) - 1).pow(2).mean() * args.gp_lambda
+
             # perform D optimization step
-            D_loss = source_D_dis_loss_real + source_D_clf_loss_real + source_D_dis_loss_fake + target_D_dis_loss_fake
-            D_loss.backward(retain_graph=True)
+            D_loss = 0.5*(source_D_dis_loss_fake + target_D_dis_loss_fake) - source_D_dis_loss_real + source_D_clf_loss_real
+            (D_loss+gradient_penalty).backward(retain_graph=True)
             D_optim.step()
         
             '''
@@ -137,11 +148,12 @@ def gta(experiment_name, args, log_file=sys.stdout):
             
             # compute generator losses
             source_fake_dis, source_fake_clf = D(source_generated_samples)
-            source_D_dis_loss_fake = criterion_dis(source_fake_dis, real_labels)
+            #source_D_dis_loss_fake = criterion_dis(source_fake_dis, real_labels)
+            source_D_dis_loss_fake = source_fake_dis.mean()
             source_D_clf_loss_fake = criterion_clf(source_fake_clf, source_labels)
             
             # perform G optimization step
-            G_loss = source_D_dis_loss_fake + source_D_clf_loss_fake
+            G_loss = -source_D_dis_loss_fake + source_D_clf_loss_fake
             G_loss.backward(retain_graph=True)
             G_optim.step()
         
@@ -176,7 +188,8 @@ def gta(experiment_name, args, log_file=sys.stdout):
             source_D_clf_loss_fake = criterion_clf(source_fake_clf, source_labels)
             
             target_fake_dis, target_fake_clf = D(target_generated_samples)
-            target_D_dis_loss_fake = criterion_dis(target_fake_dis, real_labels)
+            #target_D_dis_loss_fake = criterion_dis(target_fake_dis, real_labels)
+            target_D_dis_loss_fake = -target_fake_dis.mean()
             
             # perform F optimization step
             F_loss = C_loss + args.alpha * source_D_clf_loss_fake + args.beta * target_D_dis_loss_fake
