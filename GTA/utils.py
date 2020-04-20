@@ -11,14 +11,14 @@ def parse_args():
     parser.add_argument('--filters', type=int, default=64, help='number of filters in encoder network')
     
     parser.add_argument('--embedding_dim', type=int, default=128, help='size of encoder network output vector')
-    parser.add_argument('--latent_dim', type=int, default=256, help='size of generator network input vector')
+    parser.add_argument('--latent_dim', type=int, default=64, help='size of generator network input vector')
 
     parser.add_argument('--seed', type=int, default=1, help='random seeding')
-    parser.add_argument('--lr', type=float, default=0.0005, help='adam optimizer learning rate')
-    parser.add_argument('--beta1', type=float, default=0.8, help='adam optimizer beta1 value')
-    parser.add_argument('--beta2', type=float, default=0.999, help='adam optimizer beta2 value')
-    parser.add_argument('--batch_size', type=int, default=100, help='training batch size')
-    parser.add_argument('--epochs', type=int, default=50, help='number of epochs to train for')
+    parser.add_argument('--lr', type=float, default=1e-4, help='adam optimizer learning rate')
+    parser.add_argument('--beta1', type=float, default=0.5, help='adam optimizer beta1 value')
+    parser.add_argument('--beta2', type=float, default=0.9, help='adam optimizer beta2 value')
+    parser.add_argument('--batch_size', type=int, default=50, help='training batch size')
+    parser.add_argument('--epochs', type=int, default=200, help='number of epochs to train for')
     
     parser.add_argument('--alpha', type=float, default=0.1, help='weight of source classification loss')
     parser.add_argument('--beta', type=float, default=0.03, help='weight of adversarial loss')
