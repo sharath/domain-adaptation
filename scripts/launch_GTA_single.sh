@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#SBATCH --partition=1080ti-short
+#SBATCH --partition=1080ti-long
 #SBATCH --gres=gpu:1
 #SBATCH --mem=8192
 #SBATCH --account=rkozma
