@@ -190,8 +190,8 @@ def gta(experiment_name, args, log_file=sys.stdout):
             source_D_clf_loss_fake = criterion_clf(source_fake_clf, source_labels)
             
             target_fake_dis, target_fake_clf = D(target_generated_samples)
-            target_D_dis_loss_fake = criterion_dis(target_fake_dis, real_labels)
-            #target_D_dis_loss_fake = -target_fake_dis.mean()
+            #target_D_dis_loss_fake = criterion_dis(target_fake_dis, real_labels)
+            target_D_dis_loss_fake = -target_fake_dis.mean()
             
             # perform F optimization step
             F_loss = C_loss + args.alpha * source_D_clf_loss_fake + args.beta * target_D_dis_loss_fake
