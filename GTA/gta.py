@@ -131,9 +131,9 @@ def gta(experiment_name, args, log_file=sys.stdout):
             alpha = torch.rand(args.batch_size, 1).expand(args.batch_size,3*32*32).view(args.batch_size,3,32,32).to(args.device)
             interpolate = (alpha * source_images + (1 - alpha) * source_generated_samples).requires_grad_(True)
             gradients = torch.autograd.grad(outputs=D(interpolate)[0],
-                                    inputs=interpolate,
-                                    grad_outputs=real_labels,
-                                    create_graph=True, retain_graph=True, only_inputs=True)[0]
+                                            inputs=interpolate,
+                                            grad_outputs=real_labels,
+                                            create_graph=True, retain_graph=True, only_inputs=True)[0]
             gradient_penalty = (gradients.norm(2, dim=1) - 1).pow(2).mean() * args.gp_lambda
 
             # perform D optimization step

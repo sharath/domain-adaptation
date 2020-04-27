@@ -34,23 +34,26 @@ def get_generator(latent_dim, embedding_dim, filters, nclasses, lr, betas, devic
 def get_discriminator(filters, nclasses, lr, betas, device):
     D = nn.Sequential(
         nn.Conv2d(3, filters, 3, 1, 1),            
-        nn.BatchNorm2d(filters),
+        #nn.BatchNorm2d(filters),     
+        nn.LayerNorm(32, 32),
         nn.LeakyReLU(0.2, inplace=True),
         nn.MaxPool2d(2,2),
     
         nn.Conv2d(filters, filters*2, 3, 1, 1),         
-        nn.BatchNorm2d(filters*2),
+        #nn.BatchNorm2d(filters*2),         
+        nn.LayerNorm(16, 16),
         nn.LeakyReLU(0.2, inplace=True),
         nn.MaxPool2d(2,2),
         
-    
         nn.Conv2d(filters*2, filters*4, 3, 1, 1),           
-        nn.BatchNorm2d(filters*4),
+        #nn.BatchNorm2d(filters*4),           
+        nn.LayerNorm(8, 8),
         nn.LeakyReLU(0.2, inplace=True),
         nn.MaxPool2d(2,2),
         
         nn.Conv2d(filters*4, filters*2, 3, 1, 1),           
-        nn.BatchNorm2d(filters*2),
+        #nn.BatchNorm2d(filters*2),           
+        nn.LayerNorm(4, 4),
         nn.LeakyReLU(0.2, inplace=True),
         nn.MaxPool2d(4,4),
         ACModule(filters, nclasses)
