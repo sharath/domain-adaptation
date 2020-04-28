@@ -146,7 +146,7 @@ def gta(experiment_name, args, log_file=sys.stdout):
                 interpolate = (alpha * source_images + (1 - alpha) * source_generated_samples).requires_grad_(True)
                 gradients = torch.autograd.grad(outputs=D(interpolate)[0],
                                                 inputs=interpolate,
-                                                grad_outputs=real_labels,
+                                                grad_outputs=grad_target,
                                                 create_graph=True, retain_graph=True, only_inputs=True)[0]
                 gradient_penalty = (gradients.norm(2, dim=1) - 1).pow(2).mean() * args.gp_lambda
     

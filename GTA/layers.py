@@ -1,13 +1,16 @@
 import torch.nn as nn
+from torch.nn.utils import spectral_norm as SN
 
 # ACGAN output layer
 class ACModule(nn.Module):
     def __init__(self, filters, nclasses):
         super(ACModule, self).__init__()
         self.filters = filters
-        self.classifier_c = nn.Sequential(nn.Linear(filters*2, nclasses))              
+        self.classifier_c = nn.Sequential(
+            SN(nn.Linear(filters*2, nclasses))
+        )              
         self.classifier_s = nn.Sequential(
-            nn.Linear(filters*2, 1), 
+            (nn.Linear(filters*2, 1)), 
             nn.Sigmoid()
         )
     def forward(self, x):
