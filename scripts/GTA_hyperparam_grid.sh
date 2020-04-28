@@ -3,13 +3,13 @@ mkdir output
 
 alphas=(0.04 0.07 0.1 0.13 0.16)
 betas=(0.01 0.02 0.03 0.04 0.05)
-seeds=(6 7 8)
+seeds=(1 2 3 4 5)
 
-for a in ${alphas[@]}
+for s in ${seeds[@]}
 do
-  for b in ${betas[@]}
+  for a in ${alphas[@]}
   do
-    for s in ${seeds[@]}
+    for b in ${betas[@]}
     do
       sbatch scripts/launch_GTA_tune_wgan.sh $s $a $b
     done

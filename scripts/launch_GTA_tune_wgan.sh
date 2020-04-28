@@ -10,5 +10,5 @@ seed=$1
 alpha=$2
 beta=$3
 
-python3 -m GTA --seed $seed --alpha $alpha --beta $beta
-python3 -m GTA --seed $seed --alpha $alpha --beta -$beta
+python3 -m GTA --seed $seed --alpha $alpha --beta $beta --objective gan
+python3 -m GTA --seed $seed --alpha $alpha --beta $beta --objective wgan
