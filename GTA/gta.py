@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 from torch.utils.data import DataLoader
+from torch.nn.functional import binary_cross_entropy as BCE
 from common import save_model, save_data
 from torchvision.datasets import MNIST, SVHN
 from .utils import get_transform
@@ -54,15 +55,13 @@ def gta(experiment_name, args, log_file=sys.stdout):
         device=args.device
     )
     
-    # loss functions
     criterion_clf = nn.CrossEntropyLoss().to(args.device)
-    criterion_dis = nn.BCELoss().to(args.device)
     
-    # targets for the GAN
-    real_label_val = 1
-    fake_label_val = 0
-    real_labels = torch.FloatTensor(args.batch_size).fill_(real_label_val).to(args.device)
-    fake_labels = torch.FloatTensor(args.batch_size).fill_(fake_label_val).to(args.device)
+    if args.objective == 'gan':
+        real_labels = torch.FloatTensor(args.batch_size).fill_(1).to(args.device)
+        fake_labels = torch.FloatTensor(args.batch_size).fill_(0).to(args.device)
+    elif args.objective == 'wgan':
+        grad_target = torch.FloatTensor(args.batch_size).fill_(1).to(args.device)
     
     losses = {'D': [], 'G': [], 'F': [], 'C': []}
     accuracy = {'train': [], 'test': []}
@@ -114,31 +113,47 @@ def gta(experiment_name, args, log_file=sys.stdout):
     
             # compute discriminator losses on real source images
             source_real_dis, source_real_clf = D(source_images)
-            #source_D_dis_loss_real = criterion_dis(source_real_dis, real_labels)
-            source_D_dis_loss_real = source_real_dis.mean()
+            
+            if args.objective == 'gan': 
+                source_D_dis_loss_real = BCE(source_real_dis, real_labels).mean()
+            elif args.objective == 'wgan':
+                source_D_dis_loss_real = -source_real_dis.mean()
+                
             source_D_clf_loss_real = criterion_clf(source_real_clf, source_labels)
             
             # compute discriminator losses on fake source images
             source_fake_dis, source_fake_clf = D(source_generated_samples)
-            #source_D_dis_loss_fake = criterion_dis(source_fake_dis, fake_labels)
-            source_D_dis_loss_fake = source_fake_dis.mean()
+            
+            if args.objective == 'gan': 
+                source_D_dis_loss_fake = BCE(source_fake_dis, fake_labels).mean()
+            elif args.objective == 'wgan':
+                source_D_dis_loss_fake = source_fake_dis.mean()
+                
             # compute discriminator losses on fake target images
             target_fake_dis, target_fake_clf = D(target_generated_samples)
-            #target_D_dis_loss_fake = criterion_dis(target_fake_dis, fake_labels)
-            target_D_dis_loss_fake = target_fake_dis.mean()
             
-            # compute gradient penalty
-            alpha = torch.rand(args.batch_size, 1).expand(args.batch_size,3*32*32).view(args.batch_size,3,32,32).to(args.device)
-            interpolate = (alpha * source_images + (1 - alpha) * source_generated_samples).requires_grad_(True)
-            gradients = torch.autograd.grad(outputs=D(interpolate)[0],
-                                            inputs=interpolate,
-                                            grad_outputs=real_labels,
-                                            create_graph=True, retain_graph=True, only_inputs=True)[0]
-            gradient_penalty = (gradients.norm(2, dim=1) - 1).pow(2).mean() * args.gp_lambda
-
-            # perform D optimization step
-            D_loss = source_D_dis_loss_fake + target_D_dis_loss_fake - source_D_dis_loss_real + source_D_clf_loss_real
-            (D_loss+gradient_penalty).backward(retain_graph=True)
+            if args.objective == 'gan': 
+                target_D_dis_loss_fake = BCE(target_fake_dis, fake_labels).mean()
+                
+                # perform D optimization step
+                D_loss = source_D_dis_loss_real + source_D_clf_loss_real + source_D_dis_loss_fake + target_D_dis_loss_fake
+                
+            elif args.objective == 'wgan':
+                target_D_dis_loss_fake = target_fake_dis.mean()
+            
+                # compute gradient penalty
+                alpha = torch.rand(args.batch_size, 1).expand(args.batch_size,3*32*32).view(args.batch_size,3,32,32).to(args.device)
+                interpolate = (alpha * source_images + (1 - alpha) * source_generated_samples).requires_grad_(True)
+                gradients = torch.autograd.grad(outputs=D(interpolate)[0],
+                                                inputs=interpolate,
+                                                grad_outputs=real_labels,
+                                                create_graph=True, retain_graph=True, only_inputs=True)[0]
+                gradient_penalty = (gradients.norm(2, dim=1) - 1).pow(2).mean() * args.gp_lambda
+    
+                # perform D optimization step
+                D_loss = source_D_dis_loss_real + source_D_clf_loss_real + source_D_dis_loss_fake + target_D_dis_loss_fake + gradient_penalty
+            
+            D_loss.backward(retain_graph=True)
             D_optim.step()
         
             '''
@@ -148,14 +163,16 @@ def gta(experiment_name, args, log_file=sys.stdout):
             
             # compute generator losses
             source_fake_dis, source_fake_clf = D(source_generated_samples)
-            #source_D_dis_loss_fake = criterion_dis(source_fake_dis, real_labels)
-            source_D_dis_loss_fake = -source_fake_dis.mean()
+            
+            if args.objective == 'gan':
+                source_D_dis_loss_fake = BCE(source_fake_dis, real_labels).mean()
+            elif args.objective == 'wgan':
+                source_D_dis_loss_fake = -source_fake_dis.mean()
+                
             source_D_clf_loss_fake = criterion_clf(source_fake_clf, source_labels)
             
             # perform G optimization step
-            G_loss = source_D_clf_loss_fake
-            if it % 5 == 0:
-                G_loss += source_D_dis_loss_fake
+            G_loss = source_D_clf_loss_fake + source_D_dis_loss_fake
             G_loss.backward(retain_graph=True)
             G_optim.step()
         
@@ -190,8 +207,11 @@ def gta(experiment_name, args, log_file=sys.stdout):
             source_D_clf_loss_fake = criterion_clf(source_fake_clf, source_labels)
             
             target_fake_dis, target_fake_clf = D(target_generated_samples)
-            #target_D_dis_loss_fake = criterion_dis(target_fake_dis, real_labels)
-            target_D_dis_loss_fake = -target_fake_dis.mean()
+            
+            if args.objective == 'gan':
+                target_D_dis_loss_fake = BCE(target_fake_dis, real_labels).mean()
+            elif args.objective == 'wgan':
+                target_D_dis_loss_fake = -target_fake_dis.mean()
             
             # perform F optimization step
             F_loss = C_loss + args.alpha * source_D_clf_loss_fake + args.beta * target_D_dis_loss_fake

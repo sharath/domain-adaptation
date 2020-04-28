@@ -67,12 +67,17 @@ def get_discriminator(filters, nclasses, lr, betas, device):
 def get_encoder(channels, filters, embedding_dim, lr, betas, device):
     F = nn.Sequential(
         nn.Conv2d(channels, filters, 5, 1, 0),
+        nn.BatchNorm2d(filters),
         nn.ReLU(inplace=True),
         nn.MaxPool2d(2, 2),
+        
         nn.Conv2d(filters, filters, 5, 1, 0),
+        nn.BatchNorm2d(filters),
         nn.ReLU(inplace=True),
         nn.MaxPool2d(2, 2),
+        
         nn.Conv2d(filters, embedding_dim, 5, 1,0),
+        nn.BatchNorm2d(embedding_dim),
         nn.ReLU(inplace=True)
     ).apply(init_weights).to(device)
     
@@ -84,6 +89,7 @@ def get_encoder(channels, filters, embedding_dim, lr, betas, device):
 def get_classifier(filters, nclasses, lr, betas, device):
     C = nn.Sequential(
         nn.Linear(2*filters, 2*filters),
+        nn.BatchNorm1d(2*filters),
         nn.ReLU(inplace=True),
         nn.Linear(2*filters, nclasses),      
     ).apply(init_weights).to(device)
