@@ -172,7 +172,9 @@ def gta(experiment_name, args, log_file=sys.stdout):
             source_D_clf_loss_fake = criterion_clf(source_fake_clf, source_labels)
             
             # perform G optimization step
-            G_loss = source_D_clf_loss_fake + source_D_dis_loss_fake
+            G_loss = source_D_clf_loss_fake 
+            if it % args.n_critic == 0:
+                G_loss += source_D_dis_loss_fake+ source_D_dis_loss_fake
             G_loss.backward(retain_graph=True)
             G_optim.step()
         

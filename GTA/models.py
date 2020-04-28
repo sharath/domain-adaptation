@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.nn.utils import spectral_norm as SN
-from .layers import ACModule
 from .utils import init_weights
 
 class ACModule(nn.Module):

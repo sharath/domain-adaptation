@@ -23,6 +23,7 @@ def parse_args():
     parser.add_argument('--alpha', type=float, default=0.1, help='weight of source classification loss')
     parser.add_argument('--beta', type=float, default=0.03, help='weight of adversarial loss')
 
+    parser.add_argument('--n_critic', type=float, default=1, help='number of discriminator updates per generator update')
     parser.add_argument('--objective', type=str, default='gan', help='gta objectives (gan (default) | wgan)')
     parser.add_argument('--gp_lambda', type=float, default=10, help='wgan gp weight, unused if objective is gan')
     
@@ -30,17 +31,18 @@ def parse_args():
     return parser.parse_args()
 
 
-def init_weights(m):
-	classname = m.__class__.__name__
-	if classname.find('Conv') != -1:
-		m.weight.data.normal_(0.0, 0.01)
-	elif classname.find('BatchNorm') != -1:
-		m.weight.data.normal_(1.0, 0.01)
-		m.bias.data.fill_(0)
-	elif classname.find('Linear') != -1:
-		size = m.weight.size()
-		m.weight.data.normal_(0.0, 0.01)
-		m.bias.data.fill_(0)
+def init_weights(layer):
+    classname = layer.__class__.__name__
+    if classname.find('Conv') != -1:
+        layer.weight.data.normal_(0.0, 0.02)
+    elif classname.find('BatchNorm') != -1:
+        layer.weight.data.normal_(1.0, 0.02)
+        layer.bias.data.fill_(0)
+    elif classname.find('Linear') != -1:
+        size = layer.weight.size()
+        layer.weight.data.normal_(0.0, 0.1)
+        layer.bias.data.fill_(0)
+        
         
 def get_transform(width, channels):
     return Compose([Resize(width), 

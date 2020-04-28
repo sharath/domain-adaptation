@@ -11,4 +11,4 @@ alpha=$2
 beta=$3
 
 python3 -m GTA --seed $seed --alpha $alpha --beta $beta --objective gan
-python3 -m GTA --seed $seed --alpha $alpha --beta $beta --objective wgan
+python3 -m GTA --seed $seed --alpha $alpha --beta $beta --objective wgan --n_critic 5
