@@ -23,7 +23,7 @@ def parse_args():
     parser.add_argument('--alpha', type=float, default=0.1, help='weight of source classification loss')
     parser.add_argument('--beta', type=float, default=0.03, help='weight of adversarial loss')
 
-    parser.add_argument('--n_critic', type=float, default=1, help='number of discriminator updates per generator update')
+    parser.add_argument('--n_critic', type=int, default=1, help='number of discriminator updates per generator update')
     parser.add_argument('--objective', type=str, default='gan', help='gta objectives (gan (default) | wgan)')
     parser.add_argument('--gp_lambda', type=float, default=10, help='wgan gp weight, unused if objective is gan')
     
